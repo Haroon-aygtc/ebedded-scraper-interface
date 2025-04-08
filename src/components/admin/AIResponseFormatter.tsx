@@ -146,6 +146,11 @@ const AIResponseFormatter = () => {
       "Would you like to know more about security best practices?",
   });
 
+  // Add state for template variables
+  const [templateVariables, setTemplateVariables] = useState<
+    Record<string, string>
+  >({});
+
   const {
     register,
     handleSubmit,
@@ -270,13 +275,28 @@ const AIResponseFormatter = () => {
 
   // Fix the renderPreview function to use previewData
   const renderPreview = (format: ResponseFormat) => {
-    // Process the template with previewData
-    const processedTemplate = format.template.replace(
-      /{{(\w+)}}/g,
-      (match, key) => {
-        return previewData[key as keyof typeof previewData] || match;
-      },
-    );
+    // Create a safe copy of the template to work with
+    let processedTemplate = format.template;
+
+    // First replace all template variables with their values from previewData
+    // or with placeholder text if they don't exist
+    try {
+      processedTemplate = processedTemplate.replace(
+        /{{(\w+)}}/g,
+        (match, key) => {
+          // If the key exists in previewData, use that value
+          if (previewData[key as keyof typeof previewData]) {
+            return previewData[key as keyof typeof previewData];
+          }
+          // Otherwise return a placeholder
+          return `[${key} placeholder]`;
+        },
+      );
+    } catch (error) {
+      console.error("Error processing template:", error);
+      processedTemplate =
+        "Error processing template. Please check the console for details.";
+    }
 
     return (
       <div className="space-y-4">
@@ -668,7 +688,10 @@ const AIResponseFormatter = () => {
                   <h3 className="text-lg font-medium mb-4">Preview</h3>
                   {selectedFormat ? (
                     <div>
-                      <div className="flex justify-end mb-2">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-sm font-medium">
+                          Template Variables
+                        </h4>
                         <Button
                           variant="outline"
                           size="sm"
@@ -686,6 +709,57 @@ const AIResponseFormatter = () => {
                           )}
                         </Button>
                       </div>
+
+                      {/* Add variable editor */}
+                      <div className="space-y-3 mb-6 border rounded-md p-3">
+                        {Object.entries(previewData).map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="grid grid-cols-3 gap-2 items-center"
+                          >
+                            <Label
+                              htmlFor={`var-${key}`}
+                              className="capitalize"
+                            >
+                              {key}:
+                            </Label>
+                            <Input
+                              id={`var-${key}`}
+                              value={value}
+                              className="col-span-2"
+                              onChange={(e) =>
+                                setPreviewData((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={() => {
+                            const newVar = prompt("Enter new variable name");
+                            if (
+                              newVar &&
+                              !previewData[newVar as keyof typeof previewData]
+                            ) {
+                              setPreviewData((prev) => ({
+                                ...prev,
+                                [newVar]: "",
+                              }));
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" /> Add Variable
+                        </Button>
+                      </div>
+
+                      <h4 className="text-sm font-medium mb-2">
+                        Preview Result
+                      </h4>
                       {renderPreview(selectedFormat)}
                     </div>
                   ) : (
