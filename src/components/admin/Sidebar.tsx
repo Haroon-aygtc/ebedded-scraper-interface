@@ -128,6 +128,11 @@ const Sidebar = ({
           label: "Potential Problems",
           path: "/admin/scraping/problems",
         },
+        {
+          id: "visualization",
+          label: "Visualization",
+          path: "/admin/scraping/visualization",
+        },
       ],
     },
     {
