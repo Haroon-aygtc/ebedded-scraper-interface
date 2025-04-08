@@ -123,6 +123,11 @@ const Sidebar = ({
           label: "Scraping History",
           path: "/admin/scraping/history",
         },
+        {
+          id: "problems",
+          label: "Potential Problems",
+          path: "/admin/scraping/problems",
+        },
       ],
     },
     {

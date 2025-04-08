@@ -7,6 +7,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ScrapingConfiguratorPage from "../pages/admin/scraping/configurator";
 import SavedSelectorsPage from "../pages/admin/scraping/selectors";
 import ScrapingHistoryPage from "../pages/admin/scraping/history";
+import ScrapingProblemsPage from "../pages/admin/scraping/problems";
 
 const AppRoutes = () => {
   return (
@@ -43,6 +44,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <ScrapingHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/scraping/problems"
+        element={
+          <ProtectedRoute>
+            <ScrapingProblemsPage />
           </ProtectedRoute>
         }
       />

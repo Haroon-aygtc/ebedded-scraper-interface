@@ -137,6 +137,14 @@ const AIResponseFormatter = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAddQuestionDialog, setShowAddQuestionDialog] = useState(false);
+  // Add previewData state to fix the response is not defined error
+  const [previewData, setPreviewData] = useState({
+    response: "This is a sample AI response to demonstrate the formatting.",
+    issue: "login problems",
+    solution: "reset your password using the forgot password link",
+    followUpQuestions:
+      "Would you like to know more about security best practices?",
+  });
 
   const {
     register,
@@ -260,11 +268,20 @@ const AIResponseFormatter = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Fix the renderPreview function to use previewData
   const renderPreview = (format: ResponseFormat) => {
+    // Process the template with previewData
+    const processedTemplate = format.template.replace(
+      /{{(\w+)}}/g,
+      (match, key) => {
+        return previewData[key as keyof typeof previewData] || match;
+      },
+    );
+
     return (
       <div className="space-y-4">
         <div className="bg-gray-50 p-4 rounded-md">
-          <div className="whitespace-pre-wrap">{format.template}</div>
+          <div className="whitespace-pre-wrap">{processedTemplate}</div>
         </div>
 
         {format.followUpQuestions && format.followUpQuestions.length > 0 && (
