@@ -124,13 +124,7 @@ const DataExportOptions: React.FC<DataExportOptionsProps> = ({
       case "html":
         return (
           <pre className="bg-gray-900 text-gray-100 p-4 rounded-md overflow-x-auto text-sm font-mono">
-            {`<!DOCTYPE html> <html> <head>
-            <title>Scraping Results</title> </head>
-            <body> <div class="result"> <h2>${data[0]?.title}
-            </h2> <p><strong>URL:</strong> <a href="
-            ${data[0]?.url}">${data[0]?.url}</a></p> <div
-            class="content">${data[0]?.content.substring(0, 30)}
-            ...</div> </div> </body> </html>`}
+            {`<!DOCTYPE html>\n<html>\n<head>\n<title>Scraping Results</title>\n</head>\n<body>\n<div class="result">\n<h2>${data[0]?.title}</h2>\n<p><strong>URL:</strong> <a href="${data[0]?.url}">${data[0]?.url}</a></p>\n<div class="content">${data[0]?.content.substring(0, 30)}...</div>\n</div>\n</body>\n</html>`}
           </pre>
         );
     }

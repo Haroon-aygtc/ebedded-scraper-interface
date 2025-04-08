@@ -2,7 +2,16 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, Save, AlertCircle, Edit } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Save,
+  AlertCircle,
+  Edit,
+  Copy,
+  Check,
+  ArrowRight,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +36,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Define the schema for follow-up questions and answer options
 const answerOptionSchema = z.object({
@@ -83,6 +101,32 @@ const AIResponseFormatter = () => {
         },
       ],
     },
+    {
+      id: "2",
+      name: "Technical Support",
+      description: "Format for technical support responses",
+      template:
+        "I understand you're having an issue with {{issue}}. Here's how to resolve it: {{solution}}",
+      followUpQuestions: [
+        {
+          id: "q2",
+          question: "Did this solution resolve your issue?",
+          answerOptions: [
+            {
+              id: "a3",
+              text: "Yes, it worked!",
+              response: "Great! I'm glad I could help.",
+            },
+            {
+              id: "a4",
+              text: "No, I'm still having problems",
+              response:
+                "I'm sorry to hear that. Let's try a different approach...",
+            },
+          ],
+        },
+      ],
+    },
   ]);
 
   const [selectedFormat, setSelectedFormat] = useState<ResponseFormat | null>(
@@ -90,6 +134,9 @@ const AIResponseFormatter = () => {
   );
   const [currentQuestion, setCurrentQuestion] =
     useState<FollowUpQuestion | null>(null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showAddQuestionDialog, setShowAddQuestionDialog] = useState(false);
 
   const {
     register,
@@ -150,11 +197,18 @@ const AIResponseFormatter = () => {
     const newQuestion: FollowUpQuestion = {
       id: Date.now().toString(),
       question: "",
-      answerOptions: [],
+      answerOptions: [
+        {
+          id: Date.now().toString() + "-option",
+          text: "",
+          response: "",
+        },
+      ],
     };
     setCurrentQuestion(newQuestion);
     const currentQuestions = watch("followUpQuestions") || [];
     setValue("followUpQuestions", [...currentQuestions, newQuestion]);
+    setShowAddQuestionDialog(false);
   };
 
   const handleDeleteQuestion = (questionId: string) => {
@@ -200,14 +254,58 @@ const AIResponseFormatter = () => {
     setValue("followUpQuestions", updatedQuestions);
   };
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const renderPreview = (format: ResponseFormat) => {
+    return (
+      <div className="space-y-4">
+        <div className="bg-gray-50 p-4 rounded-md">
+          <div className="whitespace-pre-wrap">{format.template}</div>
+        </div>
+
+        {format.followUpQuestions && format.followUpQuestions.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Follow-up Questions:</h3>
+            {format.followUpQuestions.map((q) => (
+              <div key={q.id} className="border rounded-md p-3">
+                <div className="flex items-start gap-2">
+                  <ArrowRight className="h-4 w-4 mt-1 text-blue-500" />
+                  <div>
+                    <p className="font-medium">{q.question}</p>
+                    <div className="mt-2 space-y-1">
+                      {q.answerOptions.map((opt) => (
+                        <Badge
+                          key={opt.id}
+                          variant="outline"
+                          className="mr-2 mb-1"
+                        >
+                          {opt.text}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full bg-white p-6 rounded-lg shadow-sm">
       <h1 className="text-2xl font-bold mb-6">AI Response Formatter</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="formats-list">Formats List</TabsTrigger>
           <TabsTrigger value="format-editor">Format Editor</TabsTrigger>
+          <TabsTrigger value="preview">Preview & Test</TabsTrigger>
         </TabsList>
 
         <TabsContent value="formats-list" className="space-y-4">
@@ -228,7 +326,7 @@ const AIResponseFormatter = () => {
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {formats.map((format) => (
                 <Card key={format.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
@@ -288,6 +386,20 @@ const AIResponseFormatter = () => {
                         </div>
                       )}
                   </CardContent>
+                  <CardFooter>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        setSelectedFormat(format);
+                        setPreviewMode(true);
+                        setActiveTab("preview");
+                      }}
+                    >
+                      Preview & Test
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -358,7 +470,7 @@ const AIResponseFormatter = () => {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={handleAddQuestion}
+                      onClick={() => setShowAddQuestionDialog(true)}
                     >
                       <Plus className="h-3 w-3 mr-1" /> Add Question
                     </Button>
@@ -504,7 +616,107 @@ const AIResponseFormatter = () => {
             </form>
           </Card>
         </TabsContent>
+
+        <TabsContent value="preview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preview & Test</CardTitle>
+              <CardDescription>
+                Preview how your response format will look with sample data
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Select Format</h3>
+                  <ScrollArea className="h-[400px] pr-4">
+                    <div className="space-y-2">
+                      {formats.map((format) => (
+                        <div
+                          key={format.id}
+                          className={`p-3 border rounded-md cursor-pointer ${selectedFormat?.id === format.id ? "border-primary bg-primary/5" : ""}`}
+                          onClick={() => setSelectedFormat(format)}
+                        >
+                          <h4 className="font-medium">{format.name}</h4>
+                          <p className="text-sm text-gray-500">
+                            {format.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Preview</h3>
+                  {selectedFormat ? (
+                    <div>
+                      <div className="flex justify-end mb-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopy(selectedFormat.template)}
+                          className="gap-1"
+                        >
+                          {copied ? (
+                            <>
+                              <Check className="h-4 w-4" /> Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4" /> Copy Template
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      {renderPreview(selectedFormat)}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-[300px] border rounded-md">
+                      <p className="text-gray-500">
+                        Select a format to preview
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Add Question Dialog */}
+      <Dialog
+        open={showAddQuestionDialog}
+        onOpenChange={setShowAddQuestionDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Follow-up Question</DialogTitle>
+            <DialogDescription>
+              Add a new follow-up question with answer options
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="new-question">Question</Label>
+              <Input
+                id="new-question"
+                placeholder="e.g., Would you like to know more about our services?"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAddQuestionDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddQuestion}>Add Question</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
