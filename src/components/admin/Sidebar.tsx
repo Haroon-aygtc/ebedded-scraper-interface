@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -30,6 +30,7 @@ interface SidebarProps {
   userName?: string;
   userEmail?: string;
   userAvatar?: string;
+  onTabChange?: (tab: string, subTab?: string) => void;
 }
 
 const Sidebar = ({
@@ -38,11 +39,16 @@ const Sidebar = ({
   userName = "Admin User",
   userEmail = "admin@example.com",
   userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+  onTabChange = (tab: string, subTab?: string) => {}
 }: SidebarProps) => {
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [activeItem, setActiveItem] = useState("overview");
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    contextRules: true,
+    context: true,
     templates: false,
+    scraping: false,
   });
 
   const toggleMenu = (menu: string) => {
@@ -54,7 +60,7 @@ const Sidebar = ({
 
   const menuItems = [
     {
-      id: "dashboard",
+      id: "overview",
       label: "Dashboard",
       icon: <LayoutDashboard size={20} />,
       path: "/admin/dashboard",
@@ -66,18 +72,18 @@ const Sidebar = ({
       path: "/admin/widget-config",
     },
     {
-      id: "contextRules",
+      id: "context",
       label: "Context Rules",
       icon: <MessageSquare size={20} />,
       path: "/admin/context-rules",
       submenu: [
         {
-          id: "create",
+          id: "rule-editor",
           label: "Create Rule",
           path: "/admin/context-rules/create",
         },
         {
-          id: "manage",
+          id: "rules-list",
           label: "Manage Rules",
           path: "/admin/context-rules/manage",
         },
@@ -133,10 +139,15 @@ const Sidebar = ({
           label: "Visualization",
           path: "/admin/scraping/visualization",
         },
+        {
+          id: "advanced",
+          label: "Advanced Tool",
+          path: "/admin/scraping/advanced",
+        },
       ],
     },
     {
-      id: "embedCode",
+      id: "embed",
       label: "Embed Code",
       icon: <Code size={20} />,
       path: "/admin/embed-code",
@@ -155,10 +166,58 @@ const Sidebar = ({
     },
   ];
 
+  // Sync sidebar with current route and tab state
+  useEffect(() => {
+    // Check if we have state with activeTab
+    if (location.state && location.state.activeTab) {
+      const { activeTab, subTab } = location.state as { activeTab?: string; subTab?: string };
+      if (subTab) {
+        setActiveItem(`${activeTab}-${subTab}`);
+        // Expand the parent menu
+        setExpandedMenus(prev => ({
+          ...prev,
+          [activeTab]: true
+        }));
+      } else {
+        setActiveItem(activeTab);
+      }
+    } else {
+      // Otherwise, try to match the current path
+      const currentPath = location.pathname;
+
+      // Find matching menu item
+      const matchingItem = menuItems.find(item =>
+        currentPath === item.path || currentPath.startsWith(`${item.path}/`)
+      );
+
+      if (matchingItem) {
+        // Check if it has a submenu and if the path matches a submenu item
+        if (matchingItem.submenu) {
+          const matchingSubItem = matchingItem.submenu.find(subItem =>
+            currentPath === subItem.path
+          );
+
+          if (matchingSubItem) {
+            setActiveItem(`${matchingItem.id}-${matchingSubItem.id}`);
+            // Expand the parent menu
+            setExpandedMenus(prev => ({
+              ...prev,
+              [matchingItem.id]: true
+            }));
+          } else {
+            setActiveItem(matchingItem.id);
+          }
+        } else {
+          setActiveItem(matchingItem.id);
+        }
+      }
+    }
+  }, [location, menuItems]);
+
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-slate-900 text-white transition-all duration-300",
+        "flex flex-col h-full sidebar-theme text-white transition-all duration-300",
         collapsed ? "w-20" : "w-64",
       )}
     >
@@ -217,11 +276,16 @@ const Sidebar = ({
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800",
-                      activeItem === item.id && "bg-slate-800 text-white",
+                      "w-full justify-start sidebar-item-theme hover:text-white hover:bg-slate-800",
+                      activeItem === item.id && "sidebar-item-active-theme",
                       collapsed && "justify-center px-2",
                     )}
-                    onClick={() => !collapsed && toggleMenu(item.id)}
+                    onClick={() => {
+                      if (!collapsed) {
+                        toggleMenu(item.id);
+                        setActiveItem(item.id);
+                      }
+                    }}
                   >
                     <TooltipProvider delayDuration={300}>
                       <Tooltip>
@@ -255,54 +319,79 @@ const Sidebar = ({
                     <ul className="mt-1 pl-10 space-y-1">
                       {item.submenu.map((subItem) => (
                         <li key={`${item.id}-${subItem.id}`}>
-                          <Link
-                            to={subItem.path}
+                          <button
                             className={cn(
-                              "block py-2 px-3 text-sm rounded-md text-slate-300 hover:text-white hover:bg-slate-800",
+                              "block w-full text-left py-2 px-3 text-sm rounded-md sidebar-item-theme hover:text-white hover:bg-slate-800",
                               activeItem === `${item.id}-${subItem.id}` &&
-                                "bg-slate-800 text-white",
+                                "sidebar-item-active-theme",
                             )}
-                            onClick={() =>
-                              setActiveItem(`${item.id}-${subItem.id}`)
-                            }
+                            onClick={() => {
+                              setActiveItem(`${item.id}-${subItem.id}`);
+                              // Check if this is a tab within the dashboard
+                              if (subItem.path.includes('/admin/dashboard')) {
+                                // Direct tab change without navigation
+                                onTabChange(item.id, subItem.id);
+                              } else if (subItem.path.includes('/admin/')) {
+                                // For other admin routes, use state-based navigation
+                                navigate('/admin/dashboard', {
+                                  state: { activeTab: item.id, subTab: subItem.id }
+                                });
+                              } else {
+                                // External routes use normal navigation
+                                navigate(subItem.path);
+                              }
+                            }}
                           >
                             {subItem.label}
-                          </Link>
+                          </button>
                         </li>
                       ))}
                     </ul>
                   )}
                 </div>
               ) : (
-                <Link to={item.path}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800",
-                      activeItem === item.id && "bg-slate-800 text-white",
-                      collapsed && "justify-center px-2",
-                    )}
-                    onClick={() => setActiveItem(item.id)}
-                  >
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="flex items-center">
-                            {item.icon}
-                            {!collapsed && (
-                              <span className="ml-3">{item.label}</span>
-                            )}
-                          </span>
-                        </TooltipTrigger>
-                        {collapsed && (
-                          <TooltipContent side="right">
-                            {item.label}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </Button>
-                </Link>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800",
+                    activeItem === item.id && "bg-slate-800 text-white",
+                    collapsed && "justify-center px-2",
+                  )}
+                  onClick={() => {
+                    setActiveItem(item.id);
+                    // Check if this is a tab within the dashboard
+                    if (item.path === '/admin/dashboard') {
+                      // Direct tab change without navigation
+                      onTabChange(item.id);
+                    } else if (item.path.includes('/admin/')) {
+                      // For other admin routes, use state-based navigation
+                      navigate('/admin/dashboard', {
+                        state: { activeTab: item.id }
+                      });
+                    } else {
+                      // External routes use normal navigation
+                      navigate(item.path);
+                    }
+                  }}
+                >
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="flex items-center">
+                          {item.icon}
+                          {!collapsed && (
+                            <span className="ml-3">{item.label}</span>
+                          )}
+                        </span>
+                      </TooltipTrigger>
+                      {collapsed && (
+                        <TooltipContent side="right">
+                          {item.label}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                </Button>
               )}
             </li>
           ))}
@@ -318,9 +407,9 @@ const Sidebar = ({
             collapsed && "justify-center px-2",
           )}
           onClick={() => {
-            const { logout } = useAuth();
             logout();
-            window.location.href = "/login";
+            // Use navigate for client-side navigation
+            navigate("/login");
           }}
         >
           <TooltipProvider delayDuration={300}>

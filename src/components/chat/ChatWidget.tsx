@@ -13,6 +13,7 @@ import {
   AnswerOption,
 } from "@/types/chat";
 import websocketService from "@/services/websocketService";
+import { cn } from "@/lib/utils";
 
 interface ChatWidgetProps {
   title?: string;
@@ -262,7 +263,10 @@ const ChatWidget = ({
                 "--tw-primary-foreground": "#ffffff",
               } as React.CSSProperties
             }
-            className={`${getPositionClasses()} fixed shadow-xl rounded-lg flex flex-col overflow-hidden pointer-events-auto border border-gray-200`}
+            className={cn(
+              "fixed shadow-xl rounded-lg flex flex-col overflow-hidden pointer-events-auto border border-gray-200",
+              getPositionClasses(),
+            )}
           >
             <ChatHeader
               title={title}

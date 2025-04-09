@@ -80,7 +80,7 @@ const AIResponseFormatter = () => {
       id: "1",
       name: "Standard Response",
       description: "Basic response format with follow-up questions",
-      template: "{{response}}\n\n{{followUpQuestions}}",
+      template: "{response}\n\n{followUpQuestions}",
       followUpQuestions: [
         {
           id: "q1",
@@ -106,7 +106,7 @@ const AIResponseFormatter = () => {
       name: "Technical Support",
       description: "Format for technical support responses",
       template:
-        "I understand you're having an issue with {{issue}}. Here's how to resolve it: {{solution}}",
+        "I understand you're having an issue with {issue}. Here's how to resolve it: {solution}",
       followUpQuestions: [
         {
           id: "q2",
@@ -163,7 +163,7 @@ const AIResponseFormatter = () => {
     defaultValues: {
       name: "",
       description: "",
-      template: "{{response}}\n\n{{followUpQuestions}}",
+      template: "{response}\n\n{followUpQuestions}",
       followUpQuestions: [],
     },
   });
@@ -173,7 +173,7 @@ const AIResponseFormatter = () => {
     reset({
       name: "",
       description: "",
-      template: "{{response}}\n\n{{followUpQuestions}}",
+      template: "{response}\n\n{followUpQuestions}",
       followUpQuestions: [],
     });
     setActiveTab("format-editor");
@@ -282,7 +282,7 @@ const AIResponseFormatter = () => {
     // or with placeholder text if they don't exist
     try {
       processedTemplate = processedTemplate.replace(
-        /{{(\w+)}}/g,
+        /{(\w+)}/g,
         (match, key) => {
           // If the key exists in previewData, use that value
           if (previewData[key as keyof typeof previewData]) {
@@ -484,7 +484,7 @@ const AIResponseFormatter = () => {
                     <Textarea
                       id="template"
                       {...register("template")}
-                      placeholder="{{response}}\n\n{{followUpQuestions}}"
+                      placeholder="{response}\n\n{followUpQuestions}"
                       className="font-mono"
                       rows={4}
                     />
@@ -494,8 +494,8 @@ const AIResponseFormatter = () => {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      Use {{ response }} for the main AI response and{" "}
-                      {{ followUpQuestions }} for follow-up questions.
+                      Use {'{response}'} for the main AI response and{" "}
+                      {'{followUpQuestions}'} for follow-up questions.
                     </p>
                   </div>
                 </div>

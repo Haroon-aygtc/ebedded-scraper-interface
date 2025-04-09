@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -75,8 +75,19 @@ type ContextRule = z.infer<typeof contextRuleSchema>;
 // Sample query for the example section
 const sampleUserQuery = "Tell me about visa services in Dubai";
 
-const ContextRulesEditor = () => {
-  const [activeTab, setActiveTab] = useState("rules-list");
+interface ContextRulesEditorProps {
+  subTab?: string;
+}
+
+const ContextRulesEditor = ({ subTab }: ContextRulesEditorProps) => {
+  const [activeTab, setActiveTab] = useState(subTab || "rules-list");
+
+  // Update activeTab when subTab changes
+  useEffect(() => {
+    if (subTab) {
+      setActiveTab(subTab);
+    }
+  }, [subTab]);
   const [rules, setRules] = useState<ContextRule[]>([
     {
       id: "1",
@@ -252,9 +263,10 @@ const ContextRulesEditor = () => {
       <h1 className="text-2xl font-bold mb-6">Context Rules Editor</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="rules-list">Rules List</TabsTrigger>
           <TabsTrigger value="rule-editor">Rule Editor</TabsTrigger>
+          <TabsTrigger value="test">Test Rules</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules-list" className="space-y-4">
@@ -386,6 +398,35 @@ const ContextRulesEditor = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="test">
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Context Rules</CardTitle>
+              <CardDescription>
+                Test how your context rules would apply to different user queries
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="test-query">Test Query</Label>
+                <Textarea
+                  id="test-query"
+                  placeholder="Enter a sample user query to test against your rules..."
+                  rows={3}
+                />
+              </div>
+
+              <Button className="w-full sm:w-auto">
+                Test Rules
+              </Button>
+
+              <div className="p-4 border rounded-md bg-slate-50">
+                <p className="text-sm text-muted-foreground mb-4">No rules tested yet. Enter a query and click "Test Rules" to see which rules would match.</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="rule-editor">

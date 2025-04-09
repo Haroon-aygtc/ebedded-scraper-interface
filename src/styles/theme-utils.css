@@ -1,0 +1,108 @@
+/* Theme utility classes to ensure consistent styling across themes */
+
+/* Background colors */
+.bg-card {
+  background-color: hsl(var(--card));
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)/0.8));
+}
+
+/* Text colors */
+.text-primary-color {
+  color: hsl(var(--primary));
+}
+
+.text-foreground-color {
+  color: hsl(var(--foreground));
+}
+
+.text-muted-color {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Border colors */
+.border-color {
+  border-color: hsl(var(--border));
+}
+
+/* Card styling */
+.card-theme {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Dashboard content area */
+.dashboard-content {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Sidebar styling */
+.sidebar-theme {
+  background-color: hsl(var(--primary)/0.9);
+}
+
+.sidebar-item-theme {
+  color: hsl(var(--primary-foreground));
+}
+
+.sidebar-item-active-theme {
+  background-color: hsl(var(--primary)/0.8);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Tab styling */
+.tab-theme {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.tab-active-theme {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Button styling */
+.button-primary-theme {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.button-secondary-theme {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+/* Form elements */
+.input-theme {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--input));
+}
+
+.input-theme:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring)/0.3);
+}
+
+/* Chart colors for light/dark themes */
+.chart-colors-theme {
+  --chart-color-1: hsl(var(--primary));
+  --chart-color-2: hsl(var(--secondary));
+  --chart-color-3: hsl(var(--accent));
+  --chart-color-4: hsl(var(--muted));
+  --chart-grid-color: hsl(var(--border));
+}
+
+/* Dark mode specific overrides */
+.dark .chart-colors-theme {
+  --chart-grid-color: hsl(var(--border)/0.5);
+}
+
+/* Animation for theme transition */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

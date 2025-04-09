@@ -1,6 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Bell, Search, Settings, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,18 +31,18 @@ const DashboardHeader = ({
   notificationCount = 3,
 }: DashboardHeaderProps) => {
   return (
-    <header className="bg-white border-b border-gray-200 p-4 flex items-center justify-between w-full h-20 shadow-sm">
+    <header className="bg-card border-b border-color p-4 flex items-center justify-between w-full h-20 shadow-sm">
       <div className="flex items-center">
-        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+        <h1 className="text-2xl font-bold text-foreground-color">{title}</h1>
       </div>
 
       <div className="flex items-center space-x-4">
         {/* Search */}
         <div className="relative hidden md:block w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-color" />
           <Input
             placeholder="Search..."
-            className="pl-8 h-9 w-full bg-gray-50 focus:bg-white"
+            className="pl-8 h-9 w-full input-theme"
           />
         </div>
 
@@ -48,7 +50,7 @@ const DashboardHeader = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5 text-gray-600" />
+              <Bell className="h-5 w-5 text-foreground-color" />
               {notificationCount > 0 && (
                 <Badge
                   className={cn(
@@ -91,9 +93,14 @@ const DashboardHeader = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
         {/* Settings */}
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5 text-gray-600" />
+        <Button variant="ghost" size="icon" asChild>
+          <Link to="/admin/settings">
+            <Settings className="h-5 w-5 text-foreground-color" />
+          </Link>
         </Button>
 
         {/* User Profile */}
@@ -121,17 +128,17 @@ const DashboardHeader = ({
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/admin/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-red-600"
               onClick={() => {
-                const { logout } = useAuth();
                 logout();
-                window.location.href = "/login";
               }}
             >
               Logout

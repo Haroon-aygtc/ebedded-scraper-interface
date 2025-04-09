@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PlusCircle, Edit, Trash2, Save, X, Copy } from "lucide-react";
 import { useForm } from "react-hook-form";
 
@@ -45,7 +45,11 @@ interface PromptTemplate {
   updatedAt: string;
 }
 
-const PromptTemplates = () => {
+interface PromptTemplatesProps {
+  subTab?: string;
+}
+
+const PromptTemplates = ({ subTab }: PromptTemplatesProps) => {
   const [templates, setTemplates] = useState<PromptTemplate[]>([
     {
       id: "1",
@@ -82,7 +86,14 @@ const PromptTemplates = () => {
     },
   ]);
 
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(subTab || "all");
+
+  // Update activeTab when subTab changes
+  useEffect(() => {
+    if (subTab) {
+      setActiveTab(subTab);
+    }
+  }, [subTab]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(
     null,
@@ -171,10 +182,11 @@ const PromptTemplates = () => {
   };
 
   const filteredTemplates =
-    activeTab === "all"
+    activeTab === "all" || activeTab === "create"
       ? templates
       : templates.filter((t) => t.category === activeTab);
 
+  // We'll handle the 'create' tab separately
   const categories = ["all", ...new Set(templates.map((t) => t.category))];
 
   return (
@@ -186,13 +198,15 @@ const PromptTemplates = () => {
             Manage and customize AI prompt templates for your chat system
           </p>
         </div>
+        <Button
+          className="flex items-center gap-2"
+          onClick={() => setActiveTab("create")}
+        >
+          <PlusCircle className="h-4 w-4" />
+          Create Template
+        </Button>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Create Template
-            </Button>
-          </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>
@@ -323,14 +337,130 @@ const PromptTemplates = () => {
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
-          {categories.map((category) => (
+          <TabsTrigger value="all">All Templates</TabsTrigger>
+          {categories.filter(c => c !== 'all').map((category) => (
             <TabsTrigger key={category} value={category} className="capitalize">
-              {category === "all" ? "All Templates" : category}
+              {category}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="create">Create New</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="space-y-4">
+        <TabsContent value="create" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Template</CardTitle>
+              <CardDescription>
+                Create a new prompt template for your chat system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleCreateTemplate)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Template Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., General Information Query"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A descriptive name for your template
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Brief description of when to use this template"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., general, support, uae-gov"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Category helps organize templates
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="variables"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Variables</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., question, topic, product, issue"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Comma-separated list of variables used in the template
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="template"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Template Content</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter your prompt template with variables in {{variable}} format"
+                            className="min-h-[150px]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Use {'{{'}variable{'}}'}  syntax for dynamic content
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Create Template
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value={activeTab !== 'create' ? activeTab : 'all'} className="space-y-4">
           {filteredTemplates.length === 0 ? (
             <div className="text-center py-10">
               <p className="text-muted-foreground">

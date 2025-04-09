@@ -311,7 +311,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
 
   return (
     <div
-      className={`flex flex-col h-full ${fullscreenMode ? "fixed inset-0 z-50 bg-white" : ""}`}
+      className={`flex flex-col h-full ${fullscreenMode ? "fixed inset-0 z-50 bg-background" : ""}`}
     >
       <Card className="flex-1">
         <CardHeader>
@@ -469,36 +469,36 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                                 document.body.addEventListener('click', (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  
+
                                   // Remove previous selection
                                   const selected = document.querySelector('.tempo-selected');
                                   if (selected) selected.classList.remove('tempo-selected');
-                                  
+
                                   // Add new selection
                                   e.target.classList.add('tempo-selected');
-                                  
+
                                   // In a real implementation, this would send a message to the parent window
                                   console.log('Selected element:', e.target.tagName, e.target.className);
                                 });
-                                
+
                                 document.body.addEventListener('mouseover', (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  
+
                                   // Remove previous highlights
                                   const highlights = document.querySelectorAll('.tempo-highlight');
                                   highlights.forEach(el => el.classList.remove('tempo-highlight'));
-                                  
+
                                   // Add new highlight
                                   if (!e.target.classList.contains('tempo-selected')) {
                                     e.target.classList.add('tempo-highlight');
                                   }
                                 });
-                                
+
                                 document.body.addEventListener('mouseout', (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  
+
                                   // Remove highlight
                                   if (e.target.classList.contains('tempo-highlight')) {
                                     e.target.classList.remove('tempo-highlight');
@@ -513,7 +513,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                       />
 
                       {isSelectMode && (
-                        <div className="absolute top-2 left-2 right-2 bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-700 flex items-center justify-between">
+                        <div className="absolute top-2 left-2 right-2 bg-primary/10 border border-primary/20 rounded-md p-3 text-sm text-primary flex items-center justify-between">
                           <p className="flex items-center gap-1">
                             <MousePointer className="h-4 w-4" /> Click on any
                             element to select it
@@ -553,7 +553,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                         {selectors.map((selector) => (
                           <div
                             key={selector.id}
-                            className={`border rounded-md p-2 cursor-pointer transition-all ${currentSelector?.id === selector.id ? "border-primary bg-primary/5" : "hover:border-gray-400"}`}
+                            className={`border rounded-md p-2 cursor-pointer transition-all ${currentSelector?.id === selector.id ? "border-primary bg-primary/5" : "hover:border-muted-foreground"}`}
                             onClick={() => setCurrentSelector(selector)}
                             draggable
                             onDragStart={() =>
@@ -604,7 +604,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                                   removeSelector(selector.id);
                                 }}
                               >
-                                <Trash2 className="h-3 w-3 text-red-500" />
+                                <Trash2 className="h-3 w-3 text-destructive" />
                               </Button>
                             </div>
                             {selector.selector && (
@@ -627,7 +627,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                   </ScrollArea>
 
                   {currentSelector && (
-                    <div className="p-3 border-t bg-gray-50">
+                    <div className="p-3 border-t bg-muted/50">
                       <h4 className="font-medium text-sm mb-2">
                         Edit Selector
                       </h4>
@@ -778,7 +778,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
 
                 {/* Selector Testing */}
                 <div className="border rounded-md overflow-hidden flex flex-col">
-                  <div className="p-3 bg-gray-50 border-b">
+                  <div className="p-3 bg-muted/50 border-b">
                     <h3 className="font-medium">CSS Selector Helper</h3>
                   </div>
                   <div className="p-4 space-y-4 flex-1">
@@ -811,7 +811,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                               size="sm"
                               className="justify-start"
                             >
-                              <Hash className="h-3.5 w-3.5 mr-2 text-blue-500" />{" "}
+                              <Hash className="h-3.5 w-3.5 mr-2 text-primary" />{" "}
                               ID
                             </Button>
                             <Button
@@ -819,7 +819,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                               size="sm"
                               className="justify-start"
                             >
-                              <Dot className="h-3.5 w-3.5 mr-2 text-green-500" />{" "}
+                              <Dot className="h-3.5 w-3.5 mr-2 text-green-600 dark:text-green-400" />{" "}
                               Class
                             </Button>
                             <Button
@@ -827,7 +827,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                               size="sm"
                               className="justify-start"
                             >
-                              <Type className="h-3.5 w-3.5 mr-2 text-orange-500" />{" "}
+                              <Type className="h-3.5 w-3.5 mr-2 text-orange-600 dark:text-orange-400" />{" "}
                               Tag
                             </Button>
                             <Button
@@ -835,7 +835,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                               size="sm"
                               className="justify-start"
                             >
-                              <AtSign className="h-3.5 w-3.5 mr-2 text-purple-500" />{" "}
+                              <AtSign className="h-3.5 w-3.5 mr-2 text-purple-600 dark:text-purple-400" />{" "}
                               Attribute
                             </Button>
                             <Button
@@ -851,7 +851,7 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                               size="sm"
                               className="justify-start"
                             >
-                              <Brackets className="h-3.5 w-3.5 mr-2 text-red-500" />{" "}
+                              <Brackets className="h-3.5 w-3.5 mr-2 text-destructive" />{" "}
                               Custom
                             </Button>
                           </div>
@@ -868,62 +868,62 @@ const LiveSelector: React.FC<LiveSelectorProps> = ({
                                   name: "Element with ID",
                                   value: "#element-id",
                                   icon: (
-                                    <Hash className="h-3.5 w-3.5 text-blue-500" />
+                                    <Hash className="h-3.5 w-3.5 text-primary" />
                                   ),
                                 },
                                 {
                                   name: "Element with Class",
                                   value: ".element-class",
                                   icon: (
-                                    <Dot className="h-3.5 w-3.5 text-green-500" />
+                                    <Dot className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                                   ),
                                 },
                                 {
                                   name: "Element Type",
                                   value: "div",
                                   icon: (
-                                    <Type className="h-3.5 w-3.5 text-orange-500" />
+                                    <Type className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
                                   ),
                                 },
                                 {
                                   name: "Element with Attribute",
                                   value: "[data-attribute=value]",
                                   icon: (
-                                    <AtSign className="h-3.5 w-3.5 text-purple-500" />
+                                    <AtSign className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                                   ),
                                 },
                                 {
                                   name: "First Child",
                                   value: ":first-child",
                                   icon: (
-                                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                                    <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                   ),
                                 },
                                 {
                                   name: "Last Child",
                                   value: ":last-child",
                                   icon: (
-                                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                                    <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                   ),
                                 },
                                 {
                                   name: "Nth Child",
                                   value: ":nth-child(n)",
                                   icon: (
-                                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                                    <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                   ),
                                 },
                                 {
                                   name: "Contains Text",
                                   value: ":contains('text')",
                                   icon: (
-                                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                                    <Star className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                   ),
                                 },
                               ].map((item, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-center justify-between p-1.5 hover:bg-gray-100 rounded-md cursor-pointer"
+                                  className="flex items-center justify-between p-1.5 hover:bg-muted/50 rounded-md cursor-pointer"
                                   onClick={() => {
                                     if (currentSelector) {
                                       updateSelector(currentSelector.id, {

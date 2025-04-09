@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Tabs,
   TabsContent,
@@ -22,6 +23,7 @@ import {
   FileText,
   MessageCircle,
   Globe,
+  Users,
 } from "lucide-react";
 
 import Sidebar from "../../components/admin/Sidebar";
@@ -33,10 +35,30 @@ import AnalyticsDashboard from "../../components/admin/AnalyticsDashboard";
 import EmbedCodeGenerator from "../../components/admin/EmbedCodeGenerator";
 import AIResponseFormatter from "../../components/admin/AIResponseFormatter";
 import ScrapingConfigurator from "../../components/admin/scraping/ScrapingConfigurator";
+import SavedSelectorsPage from "../admin/scraping/selectors";
+import ScrapingHistoryPage from "../admin/scraping/history";
+import ScrapingProblemsPage from "../admin/scraping/problems";
+import ScrapingVisualizationPage from "../admin/scraping/visualization";
+import AdvancedLiveSelectorTool from "../../components/admin/scraping/AdvancedLiveSelectorTool";
 
 const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
+  const [activeSubTab, setActiveSubTab] = useState("");
+  const location = useLocation();
+
+  // Handle tab activation from route state
+  useEffect(() => {
+    if (location.state) {
+      const { activeTab, subTab } = location.state as { activeTab?: string; subTab?: string };
+      if (activeTab) {
+        setActiveSection(activeTab);
+      }
+      if (subTab) {
+        setActiveSubTab(subTab);
+      }
+    }
+  }, [location]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -50,10 +72,16 @@ const Dashboard = () => {
         onToggleCollapse={toggleSidebar}
         userName="Admin User"
         userEmail="admin@example.com"
+        onTabChange={(tab, subTab) => {
+          setActiveSection(tab);
+          if (subTab) {
+            setActiveSubTab(subTab);
+          }
+        }}
       />
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden dashboard-content">
         <DashboardHeader
           title="Admin Dashboard"
           username="Admin User"
@@ -67,7 +95,7 @@ const Dashboard = () => {
             onValueChange={setActiveSection}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-8 mb-8">
+            <TabsList className="grid w-full grid-cols-9 mb-8 tab-theme">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -108,6 +136,10 @@ const Dashboard = () => {
               <TabsTrigger value="scraping" className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline">Web Scraping</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Users</span>
               </TabsTrigger>
             </TabsList>
 
@@ -243,11 +275,11 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="context">
-              <ContextRulesEditor />
+              <ContextRulesEditor subTab={activeSubTab} />
             </TabsContent>
 
             <TabsContent value="templates">
-              <PromptTemplates />
+              <PromptTemplates subTab={activeSubTab} />
             </TabsContent>
 
             <TabsContent value="embed">
@@ -263,7 +295,73 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="scraping">
-              <ScrapingConfigurator />
+              <Tabs value={activeSubTab === "" ? "configurator" : activeSubTab} onValueChange={(value) => setActiveSubTab(value)} className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="configurator">Scraping Tool</TabsTrigger>
+                  <TabsTrigger value="selectors">Saved Selectors</TabsTrigger>
+                  <TabsTrigger value="history">History</TabsTrigger>
+                  <TabsTrigger value="problems">Problems</TabsTrigger>
+                  <TabsTrigger value="visualization">Visualization</TabsTrigger>
+                  <TabsTrigger value="advanced">Advanced Tool</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="configurator">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Web Scraping Tool</CardTitle>
+                      <CardDescription>
+                        Configure and run web scraping tasks to extract data from websites
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrapingConfigurator />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="selectors">
+                  <SavedSelectorsPage />
+                </TabsContent>
+
+                <TabsContent value="history">
+                  <ScrapingHistoryPage />
+                </TabsContent>
+
+                <TabsContent value="problems">
+                  <ScrapingProblemsPage />
+                </TabsContent>
+
+                <TabsContent value="visualization">
+                  <ScrapingVisualizationPage />
+                </TabsContent>
+
+                <TabsContent value="advanced">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Advanced Live Selector Tool</CardTitle>
+                      <CardDescription>
+                        Interactive tool for creating and testing complex CSS selectors
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AdvancedLiveSelectorTool
+                        initialUrl=""
+                        onSaveSelectors={(selectors) => {
+                          console.log("Saved selectors:", selectors);
+                          // Handle saving selectors
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+
+            <TabsContent value="users">
+              <div className="p-6 card-theme rounded-lg shadow">
+                <h2 className="text-2xl font-bold mb-6 text-foreground-color">User Management</h2>
+                <p className="text-muted-color mb-4">This feature will be implemented in a future update.</p>
+              </div>
             </TabsContent>
           </Tabs>
         </main>
